@@ -203,19 +203,18 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
         {
             var playerHitBox = new Rect(Canvas.GetLeft(player), Canvas.GetTop(player), player.Width, player.Height);
 
-            foreach (var x in canvas.Children.OfType<Rectangle>().ToList())
+            foreach (var entity in canvas.Children.OfType<Rectangle>().ToList())
             {
-                if ((string)x.Tag == "enemy")
+                if ((string)entity.Tag == "enemy")
                 {
-                    Canvas.SetLeft(x, Canvas.GetLeft(x) + enemySpeed);
+                    Canvas.SetLeft(entity, Canvas.GetLeft(entity) + enemySpeed);
 
-                    if (Canvas.GetLeft(x) > 820)
+                    if (Canvas.GetLeft(entity) > 820)
                     {
-                        Canvas.SetLeft(x, -80);
-                        Canvas.SetTop(x, Canvas.GetTop(x) + (x.Height + 10));
+                        Canvas.SetLeft(entity, -80);
                     }
 
-                    var enemyHitBox = new Rect(Canvas.GetLeft(x), Canvas.GetTop(x), x.Width, x.Height);
+                    var enemyHitBox = new Rect(Canvas.GetLeft(entity), Canvas.GetTop(entity), entity.Width, entity.Height);
 
                     if (playerHitBox.IntersectsWith(enemyHitBox))
                     {
@@ -279,6 +278,8 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
         private void CreateEnemies(int limit)
         {
             int left = 0;
+            int[] topPositions = { 30, 150, 270 };
+            Random random = new Random();
             totalEnemies = limit;
 
             for (int i = 0; i < limit; i++)
@@ -292,11 +293,11 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
                     Fill = enemySkin
                 };
 
-                Canvas.SetTop(newEnemy, 30);
+                Canvas.SetTop(newEnemy, topPositions[random.Next(topPositions.Length)]);
                 Canvas.SetLeft(newEnemy, left);
                 canvas.Children.Add(newEnemy);
 
-                left -= 60;
+                left -= random.Next(100, 240);
                 enemyImages++;
 
                 if (enemyImages > 8)
@@ -304,33 +305,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
                     enemyImages = 1;
                 }
 
-                switch (enemyImages)
-                {
-                    case 1:
-                        enemySkin.ImageSource = new BitmapImage(new Uri("pack://application:,,,/images/invader1.gif"));
-                        break;
-                    case 2:
-                        enemySkin.ImageSource = new BitmapImage(new Uri("pack://application:,,,/images/invader2.gif"));
-                        break;
-                    case 3:
-                        enemySkin.ImageSource = new BitmapImage(new Uri("pack://application:,,,/images/invader3.gif"));
-                        break;
-                    case 4:
-                        enemySkin.ImageSource = new BitmapImage(new Uri("pack://application:,,,/images/invader4.gif"));
-                        break;
-                    case 5:
-                        enemySkin.ImageSource = new BitmapImage(new Uri("pack://application:,,,/images/invader5.gif"));
-                        break;
-                    case 6:
-                        enemySkin.ImageSource = new BitmapImage(new Uri("pack://application:,,,/images/invader6.gif"));
-                        break;
-                    case 7:
-                        enemySkin.ImageSource = new BitmapImage(new Uri("pack://application:,,,/images/invader7.gif"));
-                        break;
-                    case 8:
-                        enemySkin.ImageSource = new BitmapImage(new Uri("pack://application:,,,/images/invader8.gif"));
-                        break;
-                }
+                enemySkin.ImageSource = new BitmapImage(new Uri($"pack://application:,,,/images/invader{enemyImages}.gif"));
             }
         }
 
