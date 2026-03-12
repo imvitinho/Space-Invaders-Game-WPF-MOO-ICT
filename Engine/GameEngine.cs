@@ -28,6 +28,16 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
         private int totalEnemies = 0;
         private int enemySpeed = 6;
 
+        private Rect GetPlayerHitBox()
+        {
+            return new Rect(
+                Canvas.GetLeft(player) + 15, 
+                Canvas.GetTop(player) + 20, 
+                player.Width - 30, 
+                player.Height - 35
+                );
+        }
+
 
         public GameEngine(Canvas canvas, Rectangle player, Label enemiesLeftLabel)
         {
@@ -201,7 +211,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
         private void ProcessEnemies()
         {
-            var playerHitBox = new Rect(Canvas.GetLeft(player), Canvas.GetTop(player), player.Width, player.Height);
+            var playerHitBox = GetPlayerHitBox();
 
             foreach (var x in canvas.Children.OfType<Rectangle>().ToList())
             {
@@ -227,7 +237,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
         private void ProcessEnemyBullets()
         {
-            var playerHitBox = new Rect(Canvas.GetLeft(player), Canvas.GetTop(player), player.Width, player.Height);
+            var playerHitBox = GetPlayerHitBox();
 
             foreach (var x in canvas.Children.OfType<Rectangle>().ToList())
             {
@@ -264,11 +274,9 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
             var enemyBullet = new Rectangle
             {
                 Tag = "enemyBullet",
-                Height = 40,
-                Width = 15,
-                Fill = Brushes.Yellow,
-                Stroke = Brushes.Black,
-                StrokeThickness = 5
+                Height = 30,
+                Width = 5,
+                Fill = Brushes.Red,
             };
 
             Canvas.SetTop(enemyBullet, y);
