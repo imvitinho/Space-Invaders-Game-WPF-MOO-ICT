@@ -24,7 +24,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
         private bool goLeft, goRight;
         private int enemyImages = 0;
         private int bulletTimer = 0;
-        private int bulletTimerLimit = 90;
+        private int bulletTimerLimit = 15;
         private int totalEnemies = 0;
         private int enemySpeed = 6;
 
@@ -67,7 +67,25 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
             if (bulletTimer < 0)
             {
-                SpawnEnemyBullet(Canvas.GetLeft(player) + 20, 10);
+                double playerCenter = Canvas.GetLeft(player) + player.Width / 2;
+
+                foreach (var enemy in canvas.Children.OfType<Rectangle>().ToList())
+                {
+                    if ((string)enemy.Tag == "enemy")
+                    {
+                        double enemyLeft = Canvas.GetLeft(enemy);
+                        double enemyRight = enemyLeft + enemy.Width;
+
+                        if (playerCenter >= enemyLeft && playerCenter <= enemyRight)
+                        {
+                            SpawnEnemyBullet(
+                                enemyLeft + enemy.Width / 2,
+                                Canvas.GetTop(enemy) + enemy.Height
+                            );
+                        }
+                    }
+                }
+
                 bulletTimer = bulletTimerLimit;
             }
 
@@ -212,7 +230,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
                     if (Canvas.GetLeft(x) > 820)
                     {
                         Canvas.SetLeft(x, -80);
-                        Canvas.SetTop(x, Canvas.GetTop(x) + (x.Height + 10));
+                        Canvas.SetTop(x, Canvas.GetTop(x) + (x.Height + 2));
                     }
 
                     var enemyHitBox = new Rect(Canvas.GetLeft(x), Canvas.GetTop(x), x.Width, x.Height);
@@ -233,7 +251,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
             {
                 if ((string)x.Tag == "enemyBullet")
                 {
-                    Canvas.SetTop(x, Canvas.GetTop(x) + 10);
+                    Canvas.SetTop(x, Canvas.GetTop(x) + 12);
 
                     if (Canvas.GetTop(x) > 480)
                     {
