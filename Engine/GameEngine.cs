@@ -13,13 +13,12 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 {
     public class GameEngine
     {
-        private readonly Canvas canvas;
+        private readonly Canvas Canvas;
         private readonly Player Player;
         private readonly Label enemiesLeftLabel;
 
         public bool GameOver { get; private set; }
 
-        //private readonly ImageBrush playerSkin = new ImageBrush();
         private readonly List<Rectangle> itemsToRemove = new List<Rectangle>();
 
         private int enemyImages = 0;
@@ -31,8 +30,8 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
         public GameEngine(Canvas canvas, Player player, Label enemiesLeftLabel)
         {
-            this.canvas = canvas ?? throw new ArgumentNullException(nameof(canvas));
-            this.Player = player ?? throw new ArgumentNullException(nameof(player));
+            Canvas = canvas ?? throw new ArgumentNullException(nameof(canvas));
+            Player = player ?? throw new ArgumentNullException(nameof(player));
             this.enemiesLeftLabel = enemiesLeftLabel ?? throw new ArgumentNullException(nameof(enemiesLeftLabel));
         }
 
@@ -110,9 +109,9 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
         public void Restart()
         {
-            canvas.Children.Clear();
-            canvas.Children.Add(enemiesLeftLabel);
-            canvas.Children.Add(Player.Rectangle);
+            Canvas.Children.Clear();
+            Canvas.Children.Add(enemiesLeftLabel);
+            Canvas.Children.Add(Player.Rectangle);
 
             itemsToRemove.Clear();
             enemyImages = 0;
@@ -154,12 +153,12 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
             Canvas.SetTop(newBullet, Player.GetY() - newBullet.Height);
             Canvas.SetLeft(newBullet, Player.GetX() + Player.Rectangle.Width / 2);
-            canvas.Children.Add(newBullet);
+            Canvas.Children.Add(newBullet);
         }
 
         private void ProcessPlayerBullets()
         {
-            foreach (var x in canvas.Children.OfType<Rectangle>().ToList())
+            foreach (var x in Canvas.Children.OfType<Rectangle>().ToList())
             {
                 if ((string)x.Tag == "bullet")
                 {
@@ -172,7 +171,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
                     var bullet = new Rect(Canvas.GetLeft(x), Canvas.GetTop(x), x.Width, x.Height);
 
-                    foreach (var y in canvas.Children.OfType<Rectangle>().ToList())
+                    foreach (var y in Canvas.Children.OfType<Rectangle>().ToList())
                     {
                         if ((string)y.Tag == "enemy")
                         {
@@ -194,7 +193,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
         {
             var playerHitBox = Player.GetHitBox();
 
-            foreach (var entity in canvas.Children.OfType<Rectangle>().ToList())
+            foreach (var entity in Canvas.Children.OfType<Rectangle>().ToList())
             {
                 if ((string)entity.Tag == "enemy")
                 {
@@ -219,7 +218,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
         {
             var playerHitBox = Player.GetHitBox();
 
-            foreach (var x in canvas.Children.OfType<Rectangle>().ToList())
+            foreach (var x in Canvas.Children.OfType<Rectangle>().ToList())
             {
                 if ((string)x.Tag == "enemyBullet")
                 {
@@ -244,7 +243,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
         {
             foreach (var i in itemsToRemove.ToList())
             {
-                canvas.Children.Remove(i);
+                Canvas.Children.Remove(i);
                 itemsToRemove.Remove(i);
             }
         }
@@ -261,7 +260,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
             Canvas.SetTop(enemyBullet, y);
             Canvas.SetLeft(enemyBullet, x);
-            canvas.Children.Add(enemyBullet);
+            Canvas.Children.Add(enemyBullet);
         }
 
         private void CreateEnemies(int limit)
@@ -284,7 +283,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
                 Canvas.SetTop(newEnemy, topPositions[random.Next(topPositions.Length)]);
                 Canvas.SetLeft(newEnemy, left);
-                canvas.Children.Add(newEnemy);
+                Canvas.Children.Add(newEnemy);
 
                 left -= random.Next(100, 240);
                 enemyImages++;
