@@ -1,3 +1,4 @@
+using Space_Invaders_Game_WPF_MOO_ICT.Classes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,51 +14,30 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
     public class GameEngine
     {
         private readonly Canvas canvas;
-        private readonly Rectangle player;
+        private readonly Player Player;
         private readonly Label enemiesLeftLabel;
 
         public bool GameOver { get; private set; }
 
-        private readonly ImageBrush playerSkin = new ImageBrush();
+        //private readonly ImageBrush playerSkin = new ImageBrush();
         private readonly List<Rectangle> itemsToRemove = new List<Rectangle>();
 
-        private bool goLeft, goRight;
         private int enemyImages = 0;
         private int bulletTimer = 0;
         private int bulletTimerLimit = 90;
         private int totalEnemies = 0;
         private int enemySpeed = 6;
 
-        private Rect GetPlayerHitBox()
-        {
-            return new Rect(
-                Canvas.GetLeft(player) + 15, 
-                Canvas.GetTop(player) + 20, 
-                player.Width - 30, 
-                player.Height - 35
-                );
-        }
 
-
-        public GameEngine(Canvas canvas, Rectangle player, Label enemiesLeftLabel)
+        public GameEngine(Canvas canvas, Player player, Label enemiesLeftLabel)
         {
             this.canvas = canvas ?? throw new ArgumentNullException(nameof(canvas));
-            this.player = player ?? throw new ArgumentNullException(nameof(player));
+            this.Player = player ?? throw new ArgumentNullException(nameof(player));
             this.enemiesLeftLabel = enemiesLeftLabel ?? throw new ArgumentNullException(nameof(enemiesLeftLabel));
         }
 
         public void Initialize()
         {
-            try
-            {
-                playerSkin.ImageSource = new BitmapImage(new Uri("pack://application:,,,/images/player.png"));
-                player.Fill = playerSkin;
-            }
-            catch
-            {
-                player.Fill = Brushes.White;
-            }
-
             ResetPlayerPosition();
             CreateEnemies(30);
             GameOver = false;
@@ -77,7 +57,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
             if (bulletTimer < 0)
             {
-                SpawnEnemyBullet(Canvas.GetLeft(player) + 20, 10);
+                SpawnEnemyBullet(Player.GetX() + 20, 10);
                 bulletTimer = bulletTimerLimit;
             }
 
@@ -101,12 +81,12 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
         {
             if (key == Key.Left)
             {
-                goLeft = true;
+                Player.SetGoLeft(true);
             }
 
             if (key == Key.Right)
             {
-                goRight = true;
+                Player.SetGoRight(true);
             }
         }
 
@@ -114,12 +94,12 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
         {
             if (key == Key.Left)
             {
-                goLeft = false;
+                Player.SetGoLeft(false);
             }
 
             if (key == Key.Right)
             {
-                goRight = false;
+                Player.SetGoRight(false);
             }
 
             if (key == Key.Space)
@@ -132,7 +112,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
         {
             canvas.Children.Clear();
             canvas.Children.Add(enemiesLeftLabel);
-            canvas.Children.Add(player);
+            canvas.Children.Add(Player.Rectangle);
 
             itemsToRemove.Clear();
             enemyImages = 0;
@@ -149,14 +129,15 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
         private void HandlePlayerMovement()
         {
-            if (goLeft && Canvas.GetLeft(player) > 0)
+
+            if (Player.GoLeft && Player.GetX() > 0)
             {
-                Canvas.SetLeft(player, Canvas.GetLeft(player) - 10);
+                Player.SetPosition(Player.GetX() - 10);
             }
 
-            if (goRight && Canvas.GetLeft(player) + 80 < Application.Current.MainWindow.Width)
+            if (Player.GoRight && Player.GetX() + 80 < Application.Current.MainWindow.Width)
             {
-                Canvas.SetLeft(player, Canvas.GetLeft(player) + 10);
+                Player.SetPosition(Player.GetX() + 10);
             }
         }
 
@@ -171,8 +152,8 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
                 Stroke = Brushes.Red
             };
 
-            Canvas.SetTop(newBullet, Canvas.GetTop(player) - newBullet.Height);
-            Canvas.SetLeft(newBullet, Canvas.GetLeft(player) + player.Width / 2);
+            Canvas.SetTop(newBullet, Player.GetY() - newBullet.Height);
+            Canvas.SetLeft(newBullet, Player.GetX() + Player.Rectangle.Width / 2);
             canvas.Children.Add(newBullet);
         }
 
@@ -211,7 +192,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
         private void ProcessEnemies()
         {
-            var playerHitBox = GetPlayerHitBox();
+            var playerHitBox = Player.GetHitBox();
 
             foreach (var entity in canvas.Children.OfType<Rectangle>().ToList())
             {
@@ -236,7 +217,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
         private void ProcessEnemyBullets()
         {
-            var playerHitBox = GetPlayerHitBox();
+            var playerHitBox = Player.GetHitBox();
 
             foreach (var x in canvas.Children.OfType<Rectangle>().ToList())
             {
@@ -317,11 +298,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
             }
         }
 
-        private void ResetPlayerPosition()
-        {
-            Canvas.SetLeft(player, 381);
-            Canvas.SetTop(player, 394);
-        }
+        private void ResetPlayerPosition() => Player.SetPosition(381, 394);
 
         private void ShowGameOver(string msg)
         {

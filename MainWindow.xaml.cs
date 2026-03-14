@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Space_Invaders_Game_WPF_MOO_ICT.Classes;
 using Space_Invaders_Game_WPF_MOO_ICT.Engine;
 
 namespace Space_Invaders_Game_WPF_MOO_ICT
@@ -17,6 +18,8 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
             InitializeComponent();
 
             myCanvas.Focus();
+
+            Player player = new Player(playerRectangle, "pack://application:,,,/images/player.png");
 
             engine = new GameEngine(myCanvas, player, enemiesLeft);
             engine.Initialize();
