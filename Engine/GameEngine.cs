@@ -16,6 +16,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
         private readonly Canvas Canvas;
         private readonly Player Player;
         private readonly Label enemiesLeftLabel;
+        private Dictionary<Key, GameActionsEnum> KeyBinding;
 
         public bool GameOver { get; private set; }
 
@@ -28,11 +29,12 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
         private int enemySpeed = 6;
 
 
-        public GameEngine(Canvas canvas, Player player, Label enemiesLeftLabel)
+        public GameEngine(Canvas canvas, Player player, Label enemiesLeftLabel, Dictionary<Key, GameActionsEnum> keyBinding)
         {
             Canvas = canvas ?? throw new ArgumentNullException(nameof(canvas));
             Player = player ?? throw new ArgumentNullException(nameof(player));
             this.enemiesLeftLabel = enemiesLeftLabel ?? throw new ArgumentNullException(nameof(enemiesLeftLabel));
+            KeyBinding = keyBinding ?? throw new ArgumentNullException(nameof(keyBinding));
         }
 
         public void Initialize()
@@ -78,32 +80,30 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
         public void OnKeyDown(Key key)
         {
-            if (key == Key.Left)
+            Dictionary<GameActionsEnum, Action> actions = new Dictionary<GameActionsEnum, Action>
             {
-                Player.SetGoLeft(true);
-            }
+                { GameActionsEnum.MoveLeft, () => Player.SetGoLeft(true) },
+                { GameActionsEnum.MoveRight, () => Player.SetGoRight(true) },
+            };
 
-            if (key == Key.Right)
+            if(KeyBinding.TryGetValue(key, out GameActionsEnum actionToPerform))
             {
-                Player.SetGoRight(true);
+                actions.GetValueOrDefault(actionToPerform)?.Invoke();
             }
         }
 
         public void OnKeyUp(Key key)
         {
-            if (key == Key.Left)
+            Dictionary<GameActionsEnum, Action> actions = new Dictionary<GameActionsEnum, Action>
             {
-                Player.SetGoLeft(false);
-            }
+                { GameActionsEnum.MoveLeft, () => Player.SetGoLeft(false) },
+                { GameActionsEnum.MoveRight, () => Player.SetGoRight(false) },
+                { GameActionsEnum.Shoot, FirePlayerBullet }
+            };
 
-            if (key == Key.Right)
+            if(KeyBinding.TryGetValue(key, out GameActionsEnum actionToPerform))
             {
-                Player.SetGoRight(false);
-            }
-
-            if (key == Key.Space)
-            {
-                FirePlayerBullet();
+                actions.GetValueOrDefault(actionToPerform)?.Invoke();
             }
         }
 

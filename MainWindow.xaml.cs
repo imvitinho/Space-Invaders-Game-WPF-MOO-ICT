@@ -19,9 +19,15 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
 
             myCanvas.Focus();
 
+            Dictionary<Key, GameActionsEnum> keyBinding = new () {
+                { Key.Left, GameActionsEnum.MoveLeft },
+                { Key.Right, GameActionsEnum.MoveRight },
+                { Key.RightCtrl, GameActionsEnum.Shoot }
+            };
+
             Player player = new Player(playerRectangle, "pack://application:,,,/images/player.png");
 
-            engine = new GameEngine(myCanvas, player, enemiesLeft);
+            engine = new GameEngine(myCanvas, player, enemiesLeft, keyBinding);
             engine.Initialize();
 
             uiTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(20) };
