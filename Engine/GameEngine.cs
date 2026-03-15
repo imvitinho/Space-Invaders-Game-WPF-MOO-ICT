@@ -120,17 +120,20 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
         public void ProcessEnemies(Canvas canvas, int enemySpeed)
         {
-            foreach (var entity in canvas.Children.OfType<Rectangle>().ToList())
-            {
-                if ((string)entity.Tag == "enemy")
-                {
-                    Canvas.SetLeft(entity, Canvas.GetLeft(entity) + enemySpeed);
+            Random random = new Random();
+            var enemies = canvas.Children.OfType<Rectangle>()
+                .Where(e => (string)e.Tag == "enemy")
+                .ToList();
 
-                    if (Canvas.GetLeft(entity) > 820)
-                    {
-                        Canvas.SetLeft(entity, -80);
-                    }
-                }
+            foreach (var entity in enemies)
+            {
+                Canvas.SetLeft(entity, Canvas.GetLeft(entity) + enemySpeed);
+            }
+
+            foreach (var entity in enemies.Where(e => Canvas.GetLeft(e) > 820).OrderByDescending(Canvas.GetLeft).ToList())
+            {
+                double minLeft = enemies.Min(Canvas.GetLeft);
+                Canvas.SetLeft(entity, Math.Min(0, minLeft) - entity.Width - random.NextInt64(35, 100));
             }
         }
 
