@@ -176,22 +176,43 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
         public void SpawnEnemyBullet(Canvas canvas, List<Player> players)
         {
-            foreach (var player in players)
+            var enemies = canvas.Children
+                .OfType<Rectangle>()
+                .Where(x => (string)x.Tag == "enemy")
+                .ToList();
+
+            foreach (var enemy in enemies)
             {
-                double x = player.GetX() + 20;
-                double y = 10;
+                double enemyX = Canvas.GetLeft(enemy);
+                double enemyY = Canvas.GetTop(enemy);
 
-                var enemyBullet = new Rectangle
+                foreach (var player in players)
                 {
-                    Tag = "enemyBullet",
-                    Height = 30,
-                    Width = 5,
-                    Fill = Brushes.Red,
-                };
+                    double playerX = player.GetX();
+                    double playerWidth = player.Rectangle.Width;
 
-                Canvas.SetTop(enemyBullet, y);
-                Canvas.SetLeft(enemyBullet, x);
-                canvas.Children.Add(enemyBullet);
+                    bool isAbovePlayer =
+                        enemyX + enemy.Width >= playerX &&
+                        enemyX <= playerX + playerWidth;
+
+                    if (isAbovePlayer)
+                    {
+                        Rectangle enemyBullet = new Rectangle
+                        {
+                            Tag = "enemyBullet",
+                            Width = 5,
+                            Height = 30,
+                            Fill = Brushes.Red
+                        };
+
+                        Canvas.SetLeft(enemyBullet, enemyX + enemy.Width / 2);
+                        Canvas.SetTop(enemyBullet, enemyY + enemy.Height);
+
+                        canvas.Children.Add(enemyBullet);
+
+                        break;
+                    }
+                }
             }
         }
 
