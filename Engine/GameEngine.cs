@@ -1,3 +1,4 @@
+using Space_Invaders_Game_WPF_MOO_ICT.Classes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,155 +13,63 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 {
     public class GameEngine
     {
-        private readonly Canvas canvas;
-        private readonly Rectangle player;
-        private readonly Label enemiesLeftLabel;
-
-        public bool GameOver { get; private set; }
-
-        private readonly ImageBrush playerSkin = new ImageBrush();
-        private readonly List<Rectangle> itemsToRemove = new List<Rectangle>();
-
-        private bool goLeft, goRight;
-        private int enemyImages = 0;
-        private int bulletTimer = 0;
-        private int bulletTimerLimit = 90;
-        private int totalEnemies = 0;
-        private int enemySpeed = 6;
-
-        private Rect GetPlayerHitBox()
-        {
-            return new Rect(
-                Canvas.GetLeft(player) + 15, 
-                Canvas.GetTop(player) + 20, 
-                player.Width - 30, 
-                player.Height - 35
-                );
-        }
-
-
-        public GameEngine(Canvas canvas, Rectangle player, Label enemiesLeftLabel)
-        {
-            this.canvas = canvas ?? throw new ArgumentNullException(nameof(canvas));
-            this.player = player ?? throw new ArgumentNullException(nameof(player));
-            this.enemiesLeftLabel = enemiesLeftLabel ?? throw new ArgumentNullException(nameof(enemiesLeftLabel));
-        }
-
-        public void Initialize()
-        {
-            try
-            {
-                playerSkin.ImageSource = new BitmapImage(new Uri("pack://application:,,,/images/player.png"));
-                player.Fill = playerSkin;
-            }
-            catch
-            {
-                player.Fill = Brushes.White;
-            }
-
-            ResetPlayerPosition();
-            CreateEnemies(30);
-            GameOver = false;
-        }
-
-        public void Update()
-        {
-            if (GameOver)
-            {
-                return;
-            }
-
-            UpdateUi();
-            HandlePlayerMovement();
-
-            bulletTimer -= 3;
-
-            if (bulletTimer < 0)
-            {
-                SpawnEnemyBullet(Canvas.GetLeft(player) + 20, 10);
-                bulletTimer = bulletTimerLimit;
-            }
-
-            ProcessPlayerBullets();
-            ProcessEnemies();
-            ProcessEnemyBullets();
-            CleanupRemovedItems();
-
-            if (totalEnemies < 10)
-            {
-                enemySpeed = 12;
-            }
-
-            if (totalEnemies < 1)
-            {
-                ShowGameOver("You Win, you saved the world!");
-            }
-        }
-
-        public void OnKeyDown(Key key)
-        {
-            if (key == Key.Left)
-            {
-                goLeft = true;
-            }
-
-            if (key == Key.Right)
-            {
-                goRight = true;
-            }
-        }
-
-        public void OnKeyUp(Key key)
-        {
-            if (key == Key.Left)
-            {
-                goLeft = false;
-            }
-
-            if (key == Key.Right)
-            {
-                goRight = false;
-            }
-
-            if (key == Key.Space)
-            {
-                FirePlayerBullet();
-            }
-        }
-
-        public void Restart()
-        {
-            canvas.Children.Clear();
-            canvas.Children.Add(enemiesLeftLabel);
-            canvas.Children.Add(player);
-
-            itemsToRemove.Clear();
-            enemyImages = 0;
-            bulletTimer = 0;
-            enemySpeed = 6;
-
-            Initialize();
-        }
-
-        private void UpdateUi()
+        public void UpdateUi(Label enemiesLeftLabel, int totalEnemies)
         {
             enemiesLeftLabel.Content = "Enemies Left: " + totalEnemies;
         }
 
-        private void HandlePlayerMovement()
+        public void HandlePlayersMovement(List<Player> players, double canvasWidth)
         {
-            if (goLeft && Canvas.GetLeft(player) > 0)
+            foreach (var player in players)
             {
-                Canvas.SetLeft(player, Canvas.GetLeft(player) - 10);
-            }
+                if (player.GoLeft && player.GetX() > 0)
+                {
+                    player.SetPosition(player.GetX() - 10);
+                }
 
-            if (goRight && Canvas.GetLeft(player) + 80 < Application.Current.MainWindow.Width)
-            {
-                Canvas.SetLeft(player, Canvas.GetLeft(player) + 10);
+                if (player.GoRight && player.GetX() + 80 < canvasWidth)
+                {
+                    player.SetPosition(player.GetX() + 10);
+                }
             }
         }
 
-        private void FirePlayerBullet()
+        public void OnKeyDown(List<Player> players, Key key)
+        {
+            foreach (var player in players)
+            {
+                Dictionary<GameActionsEnum, Action> actions = new Dictionary<GameActionsEnum, Action>
+                {
+                    { GameActionsEnum.MoveLeft, () => player.SetGoLeft(true) },
+                    { GameActionsEnum.MoveRight, () => player.SetGoRight(true) },
+                };
+
+                if (player.KeyBinding.TryGetValue(key, out GameActionsEnum actionToPerform))
+                {
+                    actions.GetValueOrDefault(actionToPerform)?.Invoke();
+                }
+            }
+        }
+
+        public void OnKeyUp(List<Player> players, Key key, Action<Player> onShoot)
+        {
+            foreach (var player in players)
+            {
+                Dictionary<GameActionsEnum, Action> actions = new Dictionary<GameActionsEnum, Action>
+                {
+                    { GameActionsEnum.MoveLeft, () => player.SetGoLeft(false) },
+                    { GameActionsEnum.MoveRight, () => player.SetGoRight(false) },
+                    { GameActionsEnum.Shoot, () => onShoot(player) },
+                };
+
+                if (player.KeyBinding.TryGetValue(key, out GameActionsEnum actionToPerform))
+                {
+                    actions.GetValueOrDefault(actionToPerform)?.Invoke();
+                }
+            }
+        }
+
+        public void FirePlayerBullet(Canvas canvas, Player player)
         {
             var newBullet = new Rectangle
             {
@@ -168,15 +77,15 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
                 Height = 20,
                 Width = 5,
                 Fill = Brushes.White,
-                Stroke = Brushes.Red
+                Stroke = player.BulletCollor,
             };
 
-            Canvas.SetTop(newBullet, Canvas.GetTop(player) - newBullet.Height);
-            Canvas.SetLeft(newBullet, Canvas.GetLeft(player) + player.Width / 2);
+            Canvas.SetTop(newBullet, player.GetY() - newBullet.Height);
+            Canvas.SetLeft(newBullet, player.GetX() + player.Rectangle.Width / 2);
             canvas.Children.Add(newBullet);
         }
 
-        private void ProcessPlayerBullets()
+        public void ProcessPlayerBullets(Canvas canvas, List<Rectangle> itemsToRemove, ref int totalEnemies)
         {
             foreach (var x in canvas.Children.OfType<Rectangle>().ToList())
             {
@@ -209,57 +118,54 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
             }
         }
 
-        private void ProcessEnemies()
+        public void ProcessEnemies(Canvas canvas, int enemySpeed)
         {
-            var playerHitBox = GetPlayerHitBox();
+            Random random = new Random();
+            var enemies = canvas.Children.OfType<Rectangle>()
+                .Where(e => (string)e.Tag == "enemy")
+                .ToList();
 
-            foreach (var entity in canvas.Children.OfType<Rectangle>().ToList())
+            foreach (var entity in enemies)
             {
-                if ((string)entity.Tag == "enemy")
-                {
-                    Canvas.SetLeft(entity, Canvas.GetLeft(entity) + enemySpeed);
+                Canvas.SetLeft(entity, Canvas.GetLeft(entity) + enemySpeed);
+            }
 
-                    if (Canvas.GetLeft(entity) > 820)
-                    {
-                        Canvas.SetLeft(entity, -80);
-                    }
-
-                    var enemyHitBox = new Rect(Canvas.GetLeft(entity), Canvas.GetTop(entity), entity.Width, entity.Height);
-
-                    if (playerHitBox.IntersectsWith(enemyHitBox))
-                    {
-                        ShowGameOver("You were killed by the invaders!!");
-                    }
-                }
+            foreach (var entity in enemies.Where(e => Canvas.GetLeft(e) > 820).OrderByDescending(Canvas.GetLeft).ToList())
+            {
+                double minLeft = enemies.Min(Canvas.GetLeft);
+                Canvas.SetLeft(entity, Math.Min(0, minLeft) - entity.Width - random.NextInt64(35, 100));
             }
         }
 
-        private void ProcessEnemyBullets()
+        public bool ProcessEnemyBullets(Canvas canvas, List<Player> players, List<Rectangle> itemsToRemove)
         {
-            var playerHitBox = GetPlayerHitBox();
+            var playersHitBoxes = players.Select(p => p.GetHitBox());
+            bool playerHit = false;
 
-            foreach (var x in canvas.Children.OfType<Rectangle>().ToList())
+            foreach (var bullet in canvas.Children.OfType<Rectangle>().ToList())
             {
-                if ((string)x.Tag == "enemyBullet")
+                if ((string)bullet.Tag == "enemyBullet")
                 {
-                    Canvas.SetTop(x, Canvas.GetTop(x) + 10);
+                    Canvas.SetTop(bullet, Canvas.GetTop(bullet) + 10);
 
-                    if (Canvas.GetTop(x) > 480)
+                    if (Canvas.GetTop(bullet) > 480)
                     {
-                        itemsToRemove.Add(x);
+                        itemsToRemove.Add(bullet);
                     }
 
-                    var enemyBulletHitBox = new Rect(Canvas.GetLeft(x), Canvas.GetTop(x), x.Width, x.Height);
+                    var enemyBulletHitBox = new Rect(Canvas.GetLeft(bullet), Canvas.GetTop(bullet), bullet.Width, bullet.Height);
 
-                    if (playerHitBox.IntersectsWith(enemyBulletHitBox))
+                    if (playersHitBoxes.Any(phb => phb.IntersectsWith(enemyBulletHitBox)))
                     {
-                        ShowGameOver("You were killed by the invader bullet!!");
+                        playerHit = true;
                     }
                 }
             }
+
+            return playerHit;
         }
 
-        private void CleanupRemovedItems()
+        public void CleanupRemovedItems(Canvas canvas, List<Rectangle> itemsToRemove)
         {
             foreach (var i in itemsToRemove.ToList())
             {
@@ -268,27 +174,33 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
             }
         }
 
-        private void SpawnEnemyBullet(double x, double y)
+        public void SpawnEnemyBullet(Canvas canvas, List<Player> players)
         {
-            var enemyBullet = new Rectangle
+            foreach (var player in players)
             {
-                Tag = "enemyBullet",
-                Height = 30,
-                Width = 5,
-                Fill = Brushes.Red,
-            };
+                double x = player.GetX() + 20;
+                double y = 10;
 
-            Canvas.SetTop(enemyBullet, y);
-            Canvas.SetLeft(enemyBullet, x);
-            canvas.Children.Add(enemyBullet);
+                var enemyBullet = new Rectangle
+                {
+                    Tag = "enemyBullet",
+                    Height = 30,
+                    Width = 5,
+                    Fill = Brushes.Red,
+                };
+
+                Canvas.SetTop(enemyBullet, y);
+                Canvas.SetLeft(enemyBullet, x);
+                canvas.Children.Add(enemyBullet);
+            }
         }
 
-        private void CreateEnemies(int limit)
+        public void CreateEnemies(Canvas canvas, int limit)
         {
             int left = 0;
+            int enemyImages = 0;
             int[] topPositions = { 30, 150, 270 };
             Random random = new Random();
-            totalEnemies = limit;
 
             for (int i = 0; i < limit; i++)
             {
@@ -317,16 +229,41 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
             }
         }
 
-        private void ResetPlayerPosition()
+        public List<Player> CreatePlayers(Canvas canvas, int playerCount, List<PlayerConfig> playerConfigs)
         {
-            Canvas.SetLeft(player, 381);
-            Canvas.SetTop(player, 394);
+            List<Player> playerList = new List<Player>();
+
+            for (int i = 0; i < playerCount; i++)
+            {
+                PlayerConfig config = playerConfigs[i];
+
+                double x = canvas.Width * (i + 1) / (playerCount * 2);
+
+                Rectangle rectangle = new Rectangle
+                {
+                    Width = 55,
+                    Height = 65,
+                    Fill = Brushes.White,
+                };
+
+                Canvas.SetTop(rectangle, 393);
+                Canvas.SetLeft(rectangle, x);
+                canvas.Children.Add(rectangle);
+
+                playerList.Add(new Player(rectangle, config.SkinPath, config.KeyBinding, config.BulletCollor));
+            }
+
+            return playerList;
         }
 
-        private void ShowGameOver(string msg)
+        public void ResetPlayersPosition(Canvas canvas, List<Player> players)
         {
-            GameOver = true;
-            enemiesLeftLabel.Content += " " + msg + " Press Enter to play again";
+            for (int i = 0; i < players.Count; i++)
+            {
+                Player player = players[i];
+                double x = canvas.Width * (i + 1) / (players.Count * 2);
+                player.SetPosition(x - player.Rectangle.Width / 2, 394);
+            }
         }
     }
 }
