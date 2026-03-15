@@ -10,6 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Classes\PlayerKeyBinding.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="images\invader1.gif" />
     <None Remove="images\invader2.gif" />
     <None Remove="images\invader3.gif" />
@@ -19,6 +23,10 @@
     <None Remove="images\invader7.gif" />
     <None Remove="images\invader8.gif" />
     <None Remove="images\player.png" />
+    <None Remove="images\player1.png" />
+    <None Remove="images\player2.png" />
+    <None Remove="images\player3.png" />
+    <None Remove="images\player4.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +38,18 @@
     <Resource Include="images\invader6.gif" />
     <Resource Include="images\invader7.gif" />
     <Resource Include="images\invader8.gif" />
-    <Resource Include="images\player.png" />
+    <Resource Include="images\player1.png">
+      <CopyToOutputDirectory></CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="images\player2.png">
+      <CopyToOutputDirectory></CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="images\player3.png">
+      <CopyToOutputDirectory></CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="images\player4.png">
+      <CopyToOutputDirectory></CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

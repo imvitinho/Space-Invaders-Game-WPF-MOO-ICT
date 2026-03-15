@@ -6,11 +6,9 @@
         xmlns:local="clr-namespace:Space_Invaders_Game_WPF_MOO_ICT"
         mc:Ignorable="d"
         Title="Space Invaders Game MOO ICT" Height="500" Width="800">
-    <Canvas Name="myCanvas" Focusable="True" Background="Black" KeyDown="KeyIsDown" KeyUp="KeyIsUp">
+    <Canvas Name="myCanvas" Focusable="True" Background="Black" KeyDown="KeyIsDown" KeyUp="KeyIsUp" Width="800">
 
         <Label Name="enemiesLeft" Foreground="White" FontSize="16" FontWeight="ExtraBold">Enemies Left: 0</Label>
-
-        <Rectangle Name="playerRectangle" Fill="White" Height="65" Width="55" Canvas.Left="381" Canvas.Top="394" />
 
 
     </Canvas>
