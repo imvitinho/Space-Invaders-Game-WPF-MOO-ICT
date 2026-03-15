@@ -146,7 +146,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
             {
                 if ((string)bullet.Tag == "enemyBullet")
                 {
-                    Canvas.SetTop(bullet, Canvas.GetTop(bullet) + 10);
+                    Canvas.SetTop(bullet, Canvas.GetTop(bullet) + 16);
 
                     if (Canvas.GetTop(bullet) > 480)
                     {
