@@ -20,7 +20,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
         private bool gameOver;
         private readonly List<Rectangle> itemsToRemove = new List<Rectangle>();
         private int bulletTimer = 0;
-        private const int bulletTimerLimit = 76;
+        private const int bulletTimerLimit = 90;
         private int totalEnemies = 0;
         private int enemySpeed = 6;
 
