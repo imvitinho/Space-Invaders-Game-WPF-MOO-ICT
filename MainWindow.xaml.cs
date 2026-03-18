@@ -24,6 +24,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
         private const int bulletTimerLimit = 76;
         private int enemySpeed = 6;
         private int ammoBoxTimer = 0;
+        private List<AmmoBox> ammoBoxes = new();
 
 
         public MainWindow()
@@ -60,6 +61,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
         private void Initialize()
         {
             enemies = engine.CreateEnemies(myCanvas, 30);
+            ammoBoxes.Clear();
             gameOver = false;
             ammoBoxTimer = Random.Shared.Next(50, 301);
         }
@@ -81,7 +83,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
 
             if (bulletTimer < 0)
             {
-                engine.TryEnemyShot(myCanvas, players, enemies);
+                engine.TryEnemyShot(myCanvas, players, enemies, ammoBoxes);
                 bulletTimer = bulletTimerLimit;
             }
 
@@ -92,12 +94,12 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
             ammoBoxTimer--;
             if (ammoBoxTimer <= 0)
             {
-                engine.SpawnAmmoBox(myCanvas, players);
+                engine.SpawnAmmoBox(myCanvas, players, ammoBoxes);
                 ammoBoxTimer = Random.Shared.Next(50, 301);
             }
-            engine.ProcessAmmoBoxes(myCanvas, players, itemsToRemove);
+            engine.ProcessAmmoBoxes(myCanvas, players, ammoBoxes, itemsToRemove);
 
-            engine.CleanupRemovedItems(myCanvas, itemsToRemove, enemies);
+            engine.CleanupRemovedItems(myCanvas, itemsToRemove, enemies, ammoBoxes);
 
             if (enemies.Count < 10) enemySpeed = 12;
             if (playerHit) ShowGameOver("You were killed by the invader bullet!!");

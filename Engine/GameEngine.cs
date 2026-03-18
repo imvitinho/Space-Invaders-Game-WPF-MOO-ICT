@@ -3,7 +3,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
 namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
@@ -152,23 +151,19 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
             return playerHit;
         }
 
-        public void CleanupRemovedItems(Canvas canvas, List<Rectangle> itemsToRemove, List<Enemy> enemies)
+        public void CleanupRemovedItems(Canvas canvas, List<Rectangle> itemsToRemove, List<Enemy> enemies, List<AmmoBox> ammoBoxes)
         {
             foreach (var i in itemsToRemove.ToList())
             {
                 canvas.Children.Remove(i);
                 enemies.RemoveAll(e => e.Rectangle == i);
+                ammoBoxes.RemoveAll(a => a.Rectangle == i);
                 itemsToRemove.Remove(i);
             }
         }
 
-        public void TryEnemyShot(Canvas canvas, List<Player> players, List<Enemy> enemies)
+        public void TryEnemyShot(Canvas canvas, List<Player> players, List<Enemy> enemies, List<AmmoBox> ammoBoxes)
         {
-            var ammoBoxes = canvas.Children
-                .OfType<Rectangle>()
-                .Where(x => (string)x.Tag == "ammoBox")
-                .ToList();
-
             foreach (var enemy in enemies)
             {
                 bool playerShot = TryShootPlayer(canvas, players, enemy);
@@ -180,15 +175,13 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
             }
         }
 
-        private static void TryShootAmmoBox(Canvas canvas, List<Rectangle> ammoBoxes, Enemy enemy)
+        private static void TryShootAmmoBox(Canvas canvas, List<AmmoBox> ammoBoxes, Enemy enemy)
         {
             foreach (var box in ammoBoxes)
             {
-                double boxX = Canvas.GetLeft(box);
-
                 bool isAboveBox =
-                    enemy.GetX() + enemy.Rectangle.Width >= boxX &&
-                    enemy.GetX() <= boxX + box.Width;
+                    enemy.GetX() + enemy.Rectangle.Width >= box.GetX() &&
+                    enemy.GetX() <= box.GetX() + box.Rectangle.Width;
 
                 if (isAboveBox)
                 {
@@ -315,67 +308,58 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
             }
         }
 
-        public void SpawnAmmoBox(Canvas canvas, List<Player> players)
+        public void SpawnAmmoBox(Canvas canvas, List<Player> players, List<AmmoBox> ammoBoxes)
         {
-            int currentBoxes = canvas.Children.OfType<Rectangle>()
-                .Count(r => (string)r.Tag == "ammoBox");
-
-            if (currentBoxes >= players.Count) return;
+            if (ammoBoxes.Count >= players.Count) return;
 
             Random random = new Random();
-            var box = new Rectangle
-            {
-                Tag = "ammoBox",
-                Width = 65,
-                Height = 65,
-                Fill = new ImageBrush(new BitmapImage(new Uri("pack://application:,,,/images/ammunitionBox.png")))
-            };
-
-            Canvas.SetLeft(box, random.NextDouble() * (canvas.Width - box.Width));
-            Canvas.SetTop(box, 393);
-            canvas.Children.Add(box);
+            var box = new AmmoBox(
+                random.NextDouble() * (canvas.Width - 65),
+                393
+            );
+            canvas.Children.Add(box.Rectangle);
+            ammoBoxes.Add(box);
         }
 
-        public void ProcessAmmoBoxes(Canvas canvas, List<Player> players, List<Rectangle> itemsToRemove)
+        public void ProcessAmmoBoxes(Canvas canvas, List<Player> players, List<AmmoBox> ammoBoxes, List<Rectangle> itemsToRemove)
         {
-            foreach (var box in canvas.Children.OfType<Rectangle>().Where(b => (string)b.Tag == "ammoBox").ToList())
-            { 
-                var boxRect = new Rect(Canvas.GetLeft(box), Canvas.GetTop(box), box.Width, box.Height);
+            foreach (var box in ammoBoxes.ToList())
+            {
+                var boxRect = box.GetHitBox();
 
                 foreach (var bullet in canvas.Children.OfType<Rectangle>().Where(b => (string)b.Tag == "bullet").ToList())
                 {
-                    
                     var bulletRect = new Rect(Canvas.GetLeft(bullet), Canvas.GetTop(bullet), bullet.Width, bullet.Height);
                     if (bulletRect.IntersectsWith(boxRect))
                     {
-                        itemsToRemove.Add(box);
+                        itemsToRemove.Add(box.Rectangle);
                         itemsToRemove.Add(bullet);
                         break;
                     }
                 }
 
-                if (itemsToRemove.Contains(box)) continue;
+                if (itemsToRemove.Contains(box.Rectangle)) continue;
 
                 foreach (var enemyBullet in canvas.Children.OfType<Rectangle>().Where(b => (string)b.Tag == "enemyBullet").ToList())
                 {
                     var enemyBulletRect = new Rect(Canvas.GetLeft(enemyBullet), Canvas.GetTop(enemyBullet), enemyBullet.Width, enemyBullet.Height);
                     if (enemyBulletRect.IntersectsWith(boxRect))
                     {
-                        itemsToRemove.Add(box);
+                        itemsToRemove.Add(box.Rectangle);
                         itemsToRemove.Add(enemyBullet);
                         break;
                     }
                 }
 
-                if (itemsToRemove.Contains(box)) continue;
+                if (itemsToRemove.Contains(box.Rectangle)) continue;
 
                 foreach (var player in players)
                 {
-                    var playerRect = new Rect(Canvas.GetLeft(player.Rectangle), Canvas.GetTop(player.Rectangle), player.Rectangle.Width, player.Rectangle.Height);
+                    var playerRect = new Rect(player.GetX(), player.GetY(), player.Rectangle.Width, player.Rectangle.Height);
                     if (playerRect.IntersectsWith(boxRect))
                     {
-                        player.AddAmmunition(30);
-                        itemsToRemove.Add(box);
+                        player.AddAmmunition(AmmoBox.AmmunitionAmount);
+                        itemsToRemove.Add(box.Rectangle);
                         break;
                     }
                 }
