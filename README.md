@@ -11,3 +11,7 @@ Diagrama de Casos De Uso (MultiPlayer)
 Diagrama de Classe
 
 <img width="1132" height="484" alt="image" src="https://github.com/user-attachments/assets/87e968c2-8442-48c4-88b7-f401783de038" />
+
+Gestão de Projetos
+
+<img width="1429" height="670" alt="image" src="https://github.com/user-attachments/assets/bb7cebee-7832-4a3d-ab76-e2282792028c" />
