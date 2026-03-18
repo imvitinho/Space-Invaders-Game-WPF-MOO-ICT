@@ -14,17 +14,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
     {
         private readonly GameEngine engine = new GameEngine();
         private DispatcherTimer uiTimer;
-
-        // Game state
-        private List<Player> players;
-        private List<Enemy> enemies = new();
-        private bool gameOver;
-        private readonly List<Rectangle> itemsToRemove = new List<Rectangle>();
-        private int bulletTimer = 0;
-        private const int bulletTimerLimit = 76;
-        private int enemySpeed = 6;
-        private int ammoBoxTimer = 0;
-        private List<AmmoBox> ammoBoxes = new();
+        private readonly GameState state = new();
 
 
         public MainWindow()
@@ -32,7 +22,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
             InitializeComponent();
 
             int playerCount = AskPlayerCount();
-            players = engine.CreatePlayers(myCanvas, playerCount, PlayerConfigFactory.GetPlayerConfigs());
+            state.Players = engine.CreatePlayers(myCanvas, playerCount, PlayerConfigFactory.GetPlayerConfigs());
 
             myCanvas.Focus();
 
@@ -60,50 +50,50 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
 
         private void Initialize()
         {
-            enemies = engine.CreateEnemies(myCanvas, 30);
-            ammoBoxes.Clear();
-            gameOver = false;
-            ammoBoxTimer = Random.Shared.Next(50, 301);
+            state.Enemies = engine.CreateEnemies(myCanvas, 30);
+            state.AmmoBoxes.Clear();
+            state.GameOver = false;
+            state.AmmoBoxTimer = Random.Shared.Next(50, 301);
         }
 
         private void Update()
         {
-            if (gameOver) return;
+            if (state.GameOver) return;
 
-            enemiesLeft.Content = "Enemies Left: " + enemies.Count;
+            enemiesLeft.Content = "Enemies Left: " + state.Enemies.Count;
 
-            foreach (var player in players)
+            foreach (var player in state.Players)
             {
                 player.AmmunitionLabel.Content = player.Ammunition;
             }
 
-            engine.HandlePlayersMovement(players, myCanvas.Width);
+            engine.HandlePlayersMovement(state.Players, myCanvas.Width);
 
-            bulletTimer -= 3;
+            state.BulletTimer -= 3;
 
-            if (bulletTimer < 0)
+            if (state.BulletTimer < 0)
             {
-                engine.TryEnemyShot(myCanvas, players, enemies, ammoBoxes);
-                bulletTimer = bulletTimerLimit;
+                engine.TryEnemyShot(myCanvas, state.Players, state.Enemies, state.AmmoBoxes);
+                state.BulletTimer = GameState.BulletTimerLimit;
             }
 
-            engine.ProcessPlayerBullets(myCanvas, itemsToRemove, enemies);
-            engine.ProcessEnemies(myCanvas, enemySpeed, enemies);
-            bool playerHit = engine.ProcessEnemyBullets(myCanvas, players, itemsToRemove);
+            engine.ProcessPlayerBullets(myCanvas, state.ItemsToRemove, state.Enemies);
+            engine.ProcessEnemies(myCanvas, state.EnemySpeed, state.Enemies);
+            bool playerHit = engine.ProcessEnemyBullets(myCanvas, state.Players, state.ItemsToRemove);
 
-            ammoBoxTimer--;
-            if (ammoBoxTimer <= 0)
+            state.AmmoBoxTimer--;
+            if (state.AmmoBoxTimer <= 0)
             {
-                engine.SpawnAmmoBox(myCanvas, players, ammoBoxes);
-                ammoBoxTimer = Random.Shared.Next(50, 301);
+                engine.SpawnAmmoBox(myCanvas, state.Players, state.AmmoBoxes);
+                state.AmmoBoxTimer = Random.Shared.Next(50, 301);
             }
-            engine.ProcessAmmoBoxes(myCanvas, players, ammoBoxes, itemsToRemove);
+            engine.ProcessAmmoBoxes(myCanvas, state.Players, state.AmmoBoxes, state.ItemsToRemove);
 
-            engine.CleanupRemovedItems(myCanvas, itemsToRemove, enemies, ammoBoxes);
+            engine.CleanupRemovedItems(myCanvas, state.ItemsToRemove, state.Enemies, state.AmmoBoxes);
 
-            if (enemies.Count < 10) enemySpeed = 12;
+            if (state.Enemies.Count < 10) state.EnemySpeed = 12;
             if (playerHit) ShowGameOver("You were killed by the invader bullet!!");
-            if (enemies.Count < 1) ShowGameOver("You Win, you saved the world!");
+            if (state.Enemies.Count < 1) ShowGameOver("You Win, you saved the world!");
         }
 
         private void Restart()
@@ -111,22 +101,22 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
             myCanvas.Children.Clear();
             myCanvas.Children.Add(enemiesLeft);
 
-            foreach (var player in players)
+            foreach (var player in state.Players)
             {
                 myCanvas.Children.Add(player.Rectangle);
             }
 
-            itemsToRemove.Clear();
-            bulletTimer = 0;
-            enemySpeed = 6;
+            state.ItemsToRemove.Clear();
+            state.BulletTimer = 0;
+            state.EnemySpeed = 6;
 
-            engine.ResetPlayersPosition(myCanvas, players);
+            engine.ResetPlayersPosition(myCanvas, state.Players);
             Initialize();
         }
 
         private void ShowGameOver(string msg)
         {
-            gameOver = true;
+            state.GameOver = true;
             enemiesLeft.Content += " " + msg + " Press Enter to play again";
         }
 
@@ -134,7 +124,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
         {
             Update();
 
-            if (gameOver)
+            if (state.GameOver)
             {
                 uiTimer.Stop();
             }
@@ -142,14 +132,14 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
 
         private void KeyIsDown(object sender, KeyEventArgs e)
         {
-            engine.OnKeyDown(players, e.Key);
+            engine.OnKeyDown(state.Players, e.Key);
         }
 
         private void KeyIsUp(object sender, KeyEventArgs e)
         {
-            engine.OnKeyUp(players, e.Key, player => engine.FirePlayerBullet(myCanvas, player));
+            engine.OnKeyUp(state.Players, e.Key, player => engine.FirePlayerBullet(myCanvas, player));
 
-            if (e.Key == Key.Enter && gameOver)
+            if (e.Key == Key.Enter && state.GameOver)
             {
                 Restart();
                 uiTimer.Start();
