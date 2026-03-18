@@ -67,7 +67,13 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
         {
             if (gameOver) return;
 
-            engine.UpdateUi(enemiesLeft, totalEnemies);
+            enemiesLeft.Content = "Enemies Left: " + totalEnemies;
+
+            foreach (var player in players)
+            {
+                player.AmmunitionLabel.Content = player.Ammunition;
+            }
+
             engine.HandlePlayersMovement(players, myCanvas.Width);
 
             bulletTimer -= 3;

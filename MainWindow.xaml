@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Space_Invaders_Game_WPF_MOO_ICT"
         mc:Ignorable="d"
-        Title="Space Invaders Game MOO ICT" Height="500" Width="800">
+        Title="Space Invaders Game MOO ICT" Height="500" Width="810">
     <Canvas Name="myCanvas" Focusable="True" Background="Black" KeyDown="KeyIsDown" KeyUp="KeyIsUp" Width="800">
 
         <Label Name="enemiesLeft" Foreground="White" FontSize="16" FontWeight="ExtraBold">Enemies Left: 0</Label>

@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="images\ammunitionBox.png" />
     <None Remove="images\invader1.gif" />
     <None Remove="images\invader2.gif" />
     <None Remove="images\invader3.gif" />
@@ -30,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="images\ammunitionBox.png" />
     <Resource Include="images\invader1.gif" />
     <Resource Include="images\invader2.gif" />
     <Resource Include="images\invader3.gif" />

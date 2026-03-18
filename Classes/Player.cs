@@ -17,8 +17,10 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Classes
         public Dictionary<Key, GameActionsEnum> KeyBinding { get; private set; }
         private ImageBrush Skin { get; set; }
         public SolidColorBrush BulletCollor { get; private set; }
+        public Label AmmunitionLabel { get; private set; }
+        public int Ammunition { get; private set; }
 
-        public Player(Rectangle rectangle, string skinPath, Dictionary<Key, GameActionsEnum> keyBinding, SolidColorBrush bulletCollor)
+        public Player(Rectangle rectangle, string skinPath, Dictionary<Key, GameActionsEnum> keyBinding, SolidColorBrush bulletCollor, Label ammunitionLabel)
         {
             Rectangle = rectangle;
             SetGoLeft(false);
@@ -26,11 +28,16 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Classes
             KeyBinding = keyBinding;
             SetSkin(skinPath);
             BulletCollor = bulletCollor;
+            AmmunitionLabel = ammunitionLabel;
+            Ammunition = 30;
         }
 
         public double GetX() => Canvas.GetLeft(Rectangle);
         public double GetY() => Canvas.GetTop(Rectangle);
 
+        public void AddAmmunition(int ammunition) => Ammunition += ammunition;
+
+        public void DecreaseAmmunition(int ammunition) => Ammunition -= ammunition;
 
         public void SetGoLeft(bool goLeft)
         {

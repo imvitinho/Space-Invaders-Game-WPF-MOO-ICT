@@ -1,7 +1,4 @@
 using Space_Invaders_Game_WPF_MOO_ICT.Classes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -13,10 +10,6 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 {
     public class GameEngine
     {
-        public void UpdateUi(Label enemiesLeftLabel, int totalEnemies)
-        {
-            enemiesLeftLabel.Content = "Enemies Left: " + totalEnemies;
-        }
 
         public void HandlePlayersMovement(List<Player> players, double canvasWidth)
         {
@@ -71,18 +64,22 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
 
         public void FirePlayerBullet(Canvas canvas, Player player)
         {
-            var newBullet = new Rectangle
+            if(player.Ammunition > 0)
             {
-                Tag = "bullet",
-                Height = 20,
-                Width = 5,
-                Fill = Brushes.White,
-                Stroke = player.BulletCollor,
-            };
+                var newBullet = new Rectangle
+                {
+                    Tag = "bullet",
+                    Height = 20,
+                    Width = 5,
+                    Fill = Brushes.White,
+                    Stroke = player.BulletCollor,
+                };
 
-            Canvas.SetTop(newBullet, player.GetY() - newBullet.Height);
-            Canvas.SetLeft(newBullet, player.GetX() + player.Rectangle.Width / 2);
-            canvas.Children.Add(newBullet);
+                player.DecreaseAmmunition(1);
+                Canvas.SetTop(newBullet, player.GetY() - newBullet.Height);
+                Canvas.SetLeft(newBullet, player.GetX() + player.Rectangle.Width / 2);
+                canvas.Children.Add(newBullet);
+            }
         }
 
         public void ProcessPlayerBullets(Canvas canvas, List<Rectangle> itemsToRemove, ref int totalEnemies)
@@ -270,12 +267,29 @@ namespace Space_Invaders_Game_WPF_MOO_ICT.Engine
                 Canvas.SetTop(rectangle, 393);
                 Canvas.SetLeft(rectangle, x);
                 canvas.Children.Add(rectangle);
+                Label ammunitionLabel = CreateAmmunitionLabel(canvas, i, config);
 
-                playerList.Add(new Player(rectangle, config.SkinPath, config.KeyBinding, config.BulletCollor));
+                playerList.Add(new Player(rectangle, config.SkinPath, config.KeyBinding, config.BulletCollor, ammunitionLabel));
             }
 
             return playerList;
         }
+
+        private static Label CreateAmmunitionLabel(Canvas canvas, int i, PlayerConfig config)
+        {
+            Label ammunitionLabel = new Label();
+            ammunitionLabel.Width = 30;
+            ammunitionLabel.Height = 30;
+            ammunitionLabel.Background = config.BulletCollor;
+            ammunitionLabel.Foreground = Brushes.White;
+            ammunitionLabel.FontWeight = FontWeights.Bold;
+            ammunitionLabel.FontSize = 16;
+            Canvas.SetRight(ammunitionLabel, 0);
+            Canvas.SetTop(ammunitionLabel, 30 * i);
+            canvas.Children.Add(ammunitionLabel);
+            return ammunitionLabel;
+        }
+
 
         public void ResetPlayersPosition(Canvas canvas, List<Player> players)
         {
