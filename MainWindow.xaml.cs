@@ -17,11 +17,11 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
 
         // Game state
         private List<Player> players;
+        private List<Enemy> enemies = new();
         private bool gameOver;
         private readonly List<Rectangle> itemsToRemove = new List<Rectangle>();
         private int bulletTimer = 0;
         private const int bulletTimerLimit = 76;
-        private int totalEnemies = 0;
         private int enemySpeed = 6;
         private int ammoBoxTimer = 0;
 
@@ -59,8 +59,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
 
         private void Initialize()
         {
-            totalEnemies = 30;
-            engine.CreateEnemies(myCanvas, totalEnemies);
+            enemies = engine.CreateEnemies(myCanvas, 30);
             gameOver = false;
             ammoBoxTimer = Random.Shared.Next(50, 301);
         }
@@ -69,7 +68,7 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
         {
             if (gameOver) return;
 
-            enemiesLeft.Content = "Enemies Left: " + totalEnemies;
+            enemiesLeft.Content = "Enemies Left: " + enemies.Count;
 
             foreach (var player in players)
             {
@@ -82,12 +81,12 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
 
             if (bulletTimer < 0)
             {
-                engine.TryEnemyShot(myCanvas, players);
+                engine.TryEnemyShot(myCanvas, players, enemies);
                 bulletTimer = bulletTimerLimit;
             }
 
-            engine.ProcessPlayerBullets(myCanvas, itemsToRemove, ref totalEnemies);
-            engine.ProcessEnemies(myCanvas, enemySpeed);
+            engine.ProcessPlayerBullets(myCanvas, itemsToRemove, enemies);
+            engine.ProcessEnemies(myCanvas, enemySpeed, enemies);
             bool playerHit = engine.ProcessEnemyBullets(myCanvas, players, itemsToRemove);
 
             ammoBoxTimer--;
@@ -98,11 +97,11 @@ namespace Space_Invaders_Game_WPF_MOO_ICT
             }
             engine.ProcessAmmoBoxes(myCanvas, players, itemsToRemove);
 
-            engine.CleanupRemovedItems(myCanvas, itemsToRemove);
+            engine.CleanupRemovedItems(myCanvas, itemsToRemove, enemies);
 
-            if (totalEnemies < 10) enemySpeed = 12;
+            if (enemies.Count < 10) enemySpeed = 12;
             if (playerHit) ShowGameOver("You were killed by the invader bullet!!");
-            if (totalEnemies < 1) ShowGameOver("You Win, you saved the world!");
+            if (enemies.Count < 1) ShowGameOver("You Win, you saved the world!");
         }
 
         private void Restart()
